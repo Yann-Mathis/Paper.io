@@ -17,15 +17,18 @@ public class NetworkManager {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
-            // Envoyer le nom
+            // Envoyer le nom AVANT de recevoir quoi que ce soit
             out.println("NAME|" + playerName);
             
             // Démarrer thread de réception
             new Thread(this::receiveMessages).start();
             
+            System.out.println("📡 Connecté au serveur avec le pseudo: " + playerName);
+            
             return true;
             
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -44,12 +47,16 @@ public class NetworkManager {
     public void sendMove(int dx, int dy) {
         if (out != null) {
             out.println("MOVE|" + dx + "|" + dy);
+            out.flush();
+            System.out.println("⌨️ Envoi mouvement: (" + dx + "," + dy + ")");
         }
     }
     
     public void sendRespawn() {
         if (out != null) {
             out.println("RESPAWN|");
+            out.flush();
+            System.out.println("⌨️ Envoi respawn");
         }
     }
     

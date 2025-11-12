@@ -39,44 +39,70 @@ public class GamePanel extends JPanel implements KeyListener {
         
         // Parser les joueurs
         if (parts.length > 1 && !parts[1].isEmpty()) {
-            String[] playerData = parts[1].split(";");
-            for (String data : playerData) {
-                if (data.isEmpty()) continue;
-                
-                String[] info = data.split("\\|");
-                String[] coords = info[0].split(",");
-                
-                int id = Integer.parseInt(coords[0]);
-                int x = Integer.parseInt(coords[1]);
-                int y = Integer.parseInt(coords[2]);
-                String color = coords[3];
-                String name = coords.length > 4 ? coords[4] : "Joueur";
-                
-                PlayerData player = new PlayerData(id, x, y, color, name);
-                
-                // Parser traînée
-                if (info.length > 1 && !info[1].isEmpty()) {
-                    String[] trailPoints = info[1].split(":");
-                    for (int i = 0; i < trailPoints.length - 1; i += 2) {
-                        if (i + 1 < trailPoints.length) {
-                            int tx = Integer.parseInt(trailPoints[i]);
-                            int ty = Integer.parseInt(trailPoints[i + 1]);
-                            player.addTrailPoint(tx, ty);
+            // Les données des joueurs sont entre STATE| et |GRID
+            int gridIndex = -1;
+            for (int i = 0; i < parts.length; i++) {
+                if (parts[i].equals("GRID")) {
+                    gridIndex = i;
+                    break;
+                }
+            }
+            
+            // Parser chaque joueur (format: id,x,y,color,name|trailpoints|)
+            int currentIndex = 1;
+            while (currentIndex < gridIndex) {
+                String playerInfo = parts[currentIndex];
+                if (!playerInfo.isEmpty()) {
+                    String[] coords = playerInfo.split(",");
+                    if (coords.length >= 5) {
+                        int id = Integer.parseInt(coords[0]);
+                        int x = Integer.parseInt(coords[1]);
+                        int y = Integer.parseInt(coords[2]);
+                        String color = coords[3];
+                        String name = coords[4];
+                        
+                        PlayerData player = new PlayerData(id, x, y, color, name);
+                        
+                        // Parser traînée (index suivant)
+                        if (currentIndex + 1 < gridIndex && !parts[currentIndex + 1].isEmpty()) {
+                            String trailData = parts[currentIndex + 1];
+                            if (!trailData.equals("GRID") && !trailData.isEmpty()) {
+                                String[] trailPoints = trailData.split(";");
+                                for (String point : trailPoints) {
+                                    if (!point.isEmpty()) {
+                                        String[] xy = point.split(",");
+                                        if (xy.length == 2) {
+                                            int tx = Integer.parseInt(xy[0]);
+                                            int ty = Integer.parseInt(xy[1]);
+                                            player.addTrailPoint(tx, ty);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        players.put(id, player);
+                        
+                        if (id == myPlayerId) {
+                            isDead = false;
                         }
                     }
                 }
-                
-                players.put(id, player);
-                
-                if (id == myPlayerId) {
-                    isDead = false;
-                }
+                currentIndex += 2; // Sauter aux données du prochain joueur
             }
         }
         
         // Parser la grille
-        if (parts.length > 2 && parts[2].equals("GRID") && parts.length > 3) {
-            String[] gridData = parts[3].split(";");
+        int gridIndex = -1;
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].equals("GRID")) {
+                gridIndex = i;
+                break;
+            }
+        }
+        
+        if (gridIndex != -1 && gridIndex + 1 < parts.length) {
+            String[] gridData = parts[gridIndex + 1].split(";");
             for (String cell : gridData) {
                 if (!cell.isEmpty()) {
                     territories.add(cell);

@@ -18,8 +18,18 @@ public class ClientHandler implements Runnable {
             this.out = new PrintWriter(socket.getOutputStream(), true);
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
+            // Attendre le nom du joueur
+            String nameMessage = in.readLine();
+            String playerName = defaultName;
+            if (nameMessage != null && nameMessage.startsWith("NAME|")) {
+                String[] parts = nameMessage.split("\\|");
+                if (parts.length > 1) {
+                    playerName = parts[1];
+                }
+            }
+            
             // Créer le joueur
-            this.player = engine.addPlayer(playerId, defaultName);
+            this.player = engine.addPlayer(playerId, playerName);
             
             // Envoyer l'ID et la couleur au client
             out.println("ID|" + player.getId() + "|" + player.getColor());
@@ -51,10 +61,12 @@ public class ClientHandler implements Runnable {
             int dy = Integer.parseInt(parts[2]);
             if (player != null && player.isAlive()) {
                 player.setDirection(dx, dy);
+                System.out.println("🎮 Joueur " + player.getId() + " direction: (" + dx + "," + dy + ")");
             }
         } else if (parts[0].equals("RESPAWN")) {
             if (player != null) {
                 engine.respawnPlayer(player.getId());
+                System.out.println("♻️ Joueur " + player.getId() + " respawn");
             }
         }
     }
@@ -78,4 +90,3 @@ public class ClientHandler implements Runnable {
     
     public Player getPlayer() { return player; }
 }
-

@@ -49,15 +49,20 @@ public class GameEngine {
     }
     
     private void updatePlayer(Player player) {
+        // Sauvegarder ancienne position
+        int oldX = player.getX();
+        int oldY = player.getY();
+        
         // Déplacer le joueur
         player.move();
         
         int x = player.getX();
         int y = player.getY();
         
-        // Vérifier limites
+        // Vérifier limites - bloquer le mouvement au lieu de tuer
         if (!grid.isInBounds(x, y)) {
-            player.kill();
+            // Remettre à l'ancienne position
+            player.respawn(oldX, oldY);
             return;
         }
         
@@ -66,6 +71,7 @@ public class GameEngine {
             if (other != player && other.isAlive()) {
                 if (other.isInTrail(x, y)) {
                     player.kill();
+                    System.out.println("💀 Joueur " + player.getId() + " a touché la traînée de " + other.getId());
                     return;
                 }
             }
@@ -76,6 +82,7 @@ public class GameEngine {
         // Vérifier retour sur territoire
         if (cell == player.getId() && !player.getTrail().isEmpty()) {
             grid.captureTerritory(player);
+            System.out.println("🎯 Joueur " + player.getId() + " a capturé du territoire!");
         } else if (cell == 0 || cell != player.getId()) {
             // Ajouter à la traînée
             player.addToTrail(x, y);
@@ -109,11 +116,11 @@ public class GameEngine {
                      .append(player.getX()).append(",")
                      .append(player.getY()).append(",")
                      .append(player.getColor()).append(",")
-                     .append(player.getName()).append(";");
+                     .append(player.getName()).append("|");
                 
                 // Traînées
                 for (int[] point : player.getTrail()) {
-                    state.append(point[0]).append(":").append(point[1]).append(":");
+                    state.append(point[0]).append(",").append(point[1]).append(";");
                 }
                 state.append("|");
             }
@@ -128,4 +135,3 @@ public class GameEngine {
     public List<Player> getPlayers() { return players; }
     public GameGrid getGrid() { return grid; }
 }
-
