@@ -54,17 +54,20 @@ public class GameEngine {
         int oldY = player.getY();
         
         // Déplacer le joueur
-        player.move();
+        if(Math.max(grid.isInBounds(oldX-1+player.getDx(), oldY-1+player.getDy()),grid.isInBounds(oldX+1+player.getDx(), oldY+1+player.getDy())) == 0){
+            player.move();
+        }
+        
         
         int x = player.getX();
         int y = player.getY();
         
         // Vérifier limites - bloquer le mouvement au lieu de tuer
-        if (!grid.isInBounds(x, y)) {
+        /*if (Math.max(grid.isInBounds(x-1, y-2),grid.isInBounds(x+2, y+2)) != 0) {
             // Remettre à l'ancienne position
-            player.respawn(oldX, oldY);
+            player.stop(x,y,Math.max(grid.isInBounds(x-2, y-2),grid.isInBounds(x+2, y+2)) );
             return;
-        }
+        }*/
         
         // Vérifier collision avec traînée adverse
         for (Player other : players) {

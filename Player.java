@@ -59,6 +59,17 @@ public class Player {
         this.trail.clear();
     }
     
+    public void stop(int x, int y, int code){
+        if(code == 3){
+            this.dx = 0;
+            this.dy = 0;
+        }else if(code == 2){
+            this.dx = 0;
+        }else if(code == 1){
+            this.dy = 0;
+        }
+    }
+
     public void respawn(int x, int y) {
         this.x = x;
         this.y = y;

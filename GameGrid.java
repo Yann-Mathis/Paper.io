@@ -12,20 +12,32 @@ public class GameGrid {
     }
     
     public void setCell(int x, int y, int value) {
-        if (isInBounds(x, y)) {
+        if (isInBounds(x, y) == 0) {
             grid[x][y] = value;
         }
     }
     
     public int getCell(int x, int y) {
-        if (isInBounds(x, y)) {
+        if (isInBounds(x, y) == 0) {
             return grid[x][y];
         }
         return -1;
     }
     
-    public boolean isInBounds(int x, int y) {
-        return x >= 0 && x < width && y >= 0 && y < height;
+    public int isInBounds(int x, int y) {
+        if(x >= 0 && x < width ){
+            if(y >= 0 && y < height){
+                return 0;
+            }else{
+                return 1;
+            }
+        }else{
+            if(y >= 0 && y < height){
+                return 2;
+            }else{
+                return 3;
+            }
+        }
     }
     
     public void initializeTerritory(int centerX, int centerY, int playerId, int size) {
@@ -33,7 +45,7 @@ public class GameGrid {
             for (int j = -size; j <= size; j++) {
                 int x = centerX + i;
                 int y = centerY + j;
-                if (isInBounds(x, y)) {
+                if (isInBounds(x, y)==0) {
                     grid[x][y] = playerId;
                 }
             }
@@ -70,7 +82,7 @@ public class GameGrid {
     }
     
     private boolean floodFill(int x, int y, boolean[][] visited, List<int[]> region, int playerId) {
-        if (!isInBounds(x, y)) {
+        if (isInBounds(x, y) != 0) {
             return true;
         }
         
