@@ -63,7 +63,7 @@ public class GameEngine {
         int y = player.getY();
         
         // Vérifier limites - bloquer le mouvement au lieu de tuer
-        /*if (Math.max(grid.isInBounds(x-1, y-2),grid.isInBounds(x+2, y+2)) != 0) {
+        /*if (Math.max(grid.isInBounds(x-1y-2),grid.isInBounds(x+2, y+2)) != 0) {
             // Remettre à l'ancienne position
             player.stop(x,y,Math.max(grid.isInBounds(x-2, y-2),grid.isInBounds(x+2, y+2)) );
             return;
@@ -71,11 +71,13 @@ public class GameEngine {
         
         // Vérifier collision avec traînée adverse
         for (Player other : players) {
-            if (other != player && other.isAlive()) {
+            if (other.isAlive()) {
                 if (other.isInTrail(x, y)) {
-                    player.kill();
-                    System.out.println("💀 Joueur " + player.getId() + " a touché la traînée de " + other.getId());
-                    return;
+                    if(!(player.getId() == other.getId() && Math.max(grid.isInBounds(x-2,y-2),grid.isInBounds(x+2, y+2)) != 0)){
+                        player.kill();
+                        System.out.println("💀 Joueur " + player.getId() + " a touché la traînée de " + other.getId());
+                        return;
+                    }
                 }
             }
         }
