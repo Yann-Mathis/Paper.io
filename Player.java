@@ -10,8 +10,9 @@ public class Player {
     private int dx;
     private int dy;
     private boolean alive;
+    private int score; // Nouvel attribut score
     private List<int[]> trail;
-    
+
     public Player(int id, String name, String color, int x, int y) {
         this.id = id;
         this.name = name;
@@ -21,14 +22,15 @@ public class Player {
         this.dx = 1;
         this.dy = 0;
         this.alive = true;
+        this.score = 0;
         this.trail = new CopyOnWriteArrayList<>();
     }
-    
+
     public void move() {
         x += dx;
         y += dy;
     }
-    
+
     public void setDirection(int dx, int dy) {
         // Empêcher le demi-tour
         if (!(this.dx == -dx && this.dy == -dy)) {
@@ -36,15 +38,15 @@ public class Player {
             this.dy = dy;
         }
     }
-    
+
     public void addToTrail(int x, int y) {
         trail.add(new int[]{x, y});
     }
-    
+
     public void clearTrail() {
         trail.clear();
     }
-    
+
     public boolean isInTrail(int x, int y) {
         for (int[] point : trail) {
             if (point[0] == x && point[1] == y) {
@@ -53,21 +55,11 @@ public class Player {
         }
         return false;
     }
-    
-    public void kill() {
+
+    public void killAndClearTerritory(GameGrid grid) {
         this.alive = false;
         this.trail.clear();
-    }
-    
-    public void stop(int x, int y, int code){
-        if(code == 3){
-            this.dx = 0;
-            this.dy = 0;
-        }else if(code == 2){
-            this.dx = 0;
-        }else if(code == 1){
-            this.dy = 0;
-        }
+        grid.clearPlayerTerritory(this.id);
     }
 
     public void respawn(int x, int y) {
@@ -75,9 +67,23 @@ public class Player {
         this.y = y;
         this.alive = true;
         this.trail.clear();
+        this.score = 0; // Réinitialiser le score au respawn
     }
-    
-    // Getters
+
+    public void calculateScore(Set<String> territories) {
+        int newScore = 0;
+        for (String cell : territories) {
+            String[] coords = cell.split(",");
+            if (coords.length >= 3) {
+                int owner = Integer.parseInt(coords[2]);
+                if (owner == this.id) {
+                    newScore++;
+                }
+            }
+        }
+        this.score = newScore;
+    }
+
     public int getId() { return id; }
     public String getName() { return name; }
     public String getColor() { return color; }
@@ -87,4 +93,6 @@ public class Player {
     public int getDy() { return dy; }
     public boolean isAlive() { return alive; }
     public List<int[]> getTrail() { return trail; }
+    public int getScore() { return score; }
 }
+

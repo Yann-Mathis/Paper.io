@@ -13,7 +13,6 @@ public class GameEngine {
     }
     
     public Player addPlayer(int id, String name) {
-        // Générer position et couleur aléatoires
         int x = 10 + random.nextInt(grid.getWidth() - 20);
         int y = 10 + random.nextInt(grid.getHeight() - 20);
         String color = generateRandomColor();
@@ -21,9 +20,7 @@ public class GameEngine {
         Player player = new Player(id, name, color, x, y);
         players.add(player);
         
-        // Initialiser territoire
         grid.initializeTerritory(x, y, id, 2);
-        
         return player;
     }
     
@@ -33,9 +30,7 @@ public class GameEngine {
     
     public Player getPlayer(int playerId) {
         for (Player player : players) {
-            if (player.getId() == playerId) {
-                return player;
-            }
+            if (player.getId() == playerId) return player;
         }
         return null;
     }
@@ -47,53 +42,66 @@ public class GameEngine {
             }
         }
     }
-    
+
+    /* ============================================================
+       ===============  UPDATE PLAYER (DÉCOUPÉ) ====================
+       ============================================================ */
+
     private void updatePlayer(Player player) {
-        // Sauvegarder ancienne position
         int oldX = player.getX();
         int oldY = player.getY();
-        
-        // Déplacer le joueur
-        if(Math.max(grid.isInBounds(oldX-1+player.getDx(), oldY-1+player.getDy()),grid.isInBounds(oldX+1+player.getDx(), oldY+1+player.getDy())) == 0){
-            player.move();
-        }
-        
-        
+
+        attemptMove(player, oldX, oldY);
+
         int x = player.getX();
         int y = player.getY();
-        
-        // Vérifier limites - bloquer le mouvement au lieu de tuer
-        /*if (Math.max(grid.isInBounds(x-1y-2),grid.isInBounds(x+2, y+2)) != 0) {
-            // Remettre à l'ancienne position
-            player.stop(x,y,Math.max(grid.isInBounds(x-2, y-2),grid.isInBounds(x+2, y+2)) );
-            return;
-        }*/
-        
-        // Vérifier collision avec traînée adverse
+
+        if (x != oldX || y != oldY) {
+            checkAllTrailCollisions(player, x, y);
+            handleTerritoryOrTrail(player, x, y);
+        }
+    }
+
+    /* === 1) Déplacement, sans changer la logique === */
+    private void attemptMove(Player player, int oldX, int oldY) {
+        if (Math.max(
+                grid.isInBounds(oldX - 1 + player.getDx(), oldY - 1 + player.getDy()),
+                grid.isInBounds(oldX + 1 + player.getDx(), oldY + 1 + player.getDy())
+        ) == 0) {
+            player.move();
+        }
+    }
+
+    /* === 2) Collisions avec TOUTES les traînées === */
+    private void checkAllTrailCollisions(Player player, int x, int y) {
         for (Player other : players) {
-            if (other.isAlive()) {
-                if (other.isInTrail(x, y)) {
-                    if(!(player.getId() == other.getId() && Math.max(grid.isInBounds(x-2,y-2),grid.isInBounds(x+2, y+2)) != 0)){
-                        player.kill();
-                        System.out.println("💀 Joueur " + player.getId() + " a touché la traînée de " + other.getId());
-                        return;
-                    }
-                }
+            if (!other.isAlive()) continue;
+
+            if (other.isInTrail(x, y)) {
+                other.killAndClearTerritory(grid);
+                System.out.println("💀 Joueur " + player.getId() +
+                                       " a touché la traînée de " + other.getId());
+                return;
             }
         }
-        
+    }
+
+    /* === 3) Capture ou ajout de traînée === */
+    private void handleTerritoryOrTrail(Player player, int x, int y) {
         int cell = grid.getCell(x, y);
-        
-        // Vérifier retour sur territoire
+
         if (cell == player.getId() && !player.getTrail().isEmpty()) {
             grid.captureTerritory(player);
             System.out.println("🎯 Joueur " + player.getId() + " a capturé du territoire!");
         } else if (cell == 0 || cell != player.getId()) {
-            // Ajouter à la traînée
             player.addToTrail(x, y);
         }
     }
-    
+
+    /* ============================================================
+                         FIN UPDATE PLAYER
+       ============================================================ */
+
     public void respawnPlayer(int playerId) {
         Player player = getPlayer(playerId);
         if (player != null) {
@@ -114,7 +122,6 @@ public class GameEngine {
     public String serializeGameState() {
         StringBuilder state = new StringBuilder("STATE|");
         
-        // Sérialiser tous les joueurs
         for (Player player : players) {
             if (player.isAlive()) {
                 state.append(player.getId()).append(",")
@@ -123,7 +130,6 @@ public class GameEngine {
                      .append(player.getColor()).append(",")
                      .append(player.getName()).append("|");
                 
-                // Traînées
                 for (int[] point : player.getTrail()) {
                     state.append(point[0]).append(",").append(point[1]).append(";");
                 }
@@ -131,12 +137,11 @@ public class GameEngine {
             }
         }
         
-        // Ajouter la grille
         state.append("GRID|").append(grid.serializeGrid());
-        
         return state.toString();
     }
     
     public List<Player> getPlayers() { return players; }
     public GameGrid getGrid() { return grid; }
 }
+

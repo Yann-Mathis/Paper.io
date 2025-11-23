@@ -52,6 +52,17 @@ public class GameGrid {
         }
     }
     
+    public void clearPlayerTerritory(int playerId) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (grid[x][y] == playerId) {
+                    grid[x][y] = 0; // Remettre à neutre
+                }
+            }
+        }
+        System.out.println("🧹 Territoire du joueur " + playerId + " supprimé");
+    }
+    
     public void captureTerritory(Player player) {
         int playerId = player.getId();
         
