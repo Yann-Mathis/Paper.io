@@ -42,7 +42,7 @@ public class GameClient extends JFrame {
             System.out.println("✅ Connecté avec ID: " + myPlayerId);
             
         } else if (parts[0].equals("STATE")) {
-            gamePanel.updateGameState(parts);
+            SwingUtilities.invokeLater(() -> gamePanel.updateGameState(parts));
         }
     }
     
