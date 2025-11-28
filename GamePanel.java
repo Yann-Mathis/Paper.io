@@ -8,9 +8,12 @@ public class GamePanel extends JPanel implements KeyListener {
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
     private static final int CELL_SIZE = 10;
+    private static final int columns = WIDTH/CELL_SIZE;
+    private static final int rows = HEIGHT/CELL_SIZE;
 
     private GameClient client;
     private Map<Integer, Player> players;
+    private int [][] grade;
     private Set<String> territories;
     private int myPlayerId;
 
@@ -18,6 +21,7 @@ public class GamePanel extends JPanel implements KeyListener {
         this.client = client;
         this.players = new HashMap<>();
         this.territories = new HashSet<>();
+        this.grade = new int[columns][rows];
 
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.WHITE);
@@ -31,14 +35,15 @@ public class GamePanel extends JPanel implements KeyListener {
 
     public void updateGameState(String[] parts) {
         players.clear();
-        territories.clear();
+        //territories.clear();
 
         parsePlayers(parts);
         parseGrid(parts);
 
         // Mise à jour des scores
         for (Player player : players.values()) {
-            player.calculateScore(territories);
+            //player.calculateScore(territories);
+            //player.calculateScore(grade,columns,rows);
         }
 
         repaint();
@@ -106,7 +111,14 @@ public class GamePanel extends JPanel implements KeyListener {
 
         String[] gridData = parts[gridIndex + 1].split(";");
         for (String cell : gridData) {
-            if (!cell.isEmpty()) territories.add(cell);
+            if (!cell.isEmpty()){
+               // territories.add(cell);
+                String[] coords = cell.split(",");
+                int x = Integer.parseInt(coords[0]);
+                int y = Integer.parseInt(coords[1]);
+                int owner = Integer.parseInt(coords[2]);
+                grade[x][y] = owner;
+            }
         }
     }
 
@@ -142,7 +154,20 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     private void drawTerritories(Graphics2D g2d) {
-        for (String cell : territories) {
+        for(int x = 0; x < columns; x++){
+            for(int y = 0; y < rows; y++){
+                 if (grade[x][y] != 0) {
+                    Player player = players.get(grade[x][y]);
+                    if(player != null){
+                    //System.out.println(player.getId());
+                    Color c = Color.decode(player.getColor());
+                    g2d.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 100));
+                    g2d.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    }
+                }
+            }
+        }
+        /*for (String cell : territories) {
             String[] coords = cell.split(",");
             if (coords.length >= 3) {
                 int x = Integer.parseInt(coords[0]);
@@ -156,7 +181,7 @@ public class GamePanel extends JPanel implements KeyListener {
                     g2d.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 }
             }
-        }
+        }*/
     }
 
     private void drawPlayersAndTrails(Graphics2D g2d) {

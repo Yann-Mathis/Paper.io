@@ -4,16 +4,20 @@ public class GameGrid {
     private int width;
     private int height;
     private int[][] grid;
-    
+    private List<int[]> changes;
+    private boolean complete_state;
     public GameGrid(int width, int height) {
         this.width = width;
         this.height = height;
         this.grid = new int[width][height];
+        this.changes = new ArrayList<>();
+        this.complete_state = false;
     }
     
     public void setCell(int x, int y, int value) {
         if (isInBounds(x, y) == 0) {
             grid[x][y] = value;
+            changes.add(new int[]{x,y});
         }
     }
     
@@ -47,9 +51,11 @@ public class GameGrid {
                 int y = centerY + j;
                 if (isInBounds(x, y)==0) {
                     grid[x][y] = playerId;
+                    changes.add(new int[]{x,y});
                 }
             }
         }
+        complete_state = true;
     }
     
     public void clearPlayerTerritory(int playerId) {
@@ -57,6 +63,7 @@ public class GameGrid {
             for (int y = 0; y < height; y++) {
                 if (grid[x][y] == playerId) {
                     grid[x][y] = 0; // Remettre à neutre
+                    changes.add(new int[]{x,y});
                 }
             }
         }
@@ -87,6 +94,7 @@ public class GameGrid {
                     if (!touchesBorder) {
                         for (int[] point : region) {
                             grid[point[0]][point[1]] = playerId;
+                            changes.add(new int[]{point[0],point[1]});
                         }
                     }
                 }
@@ -121,13 +129,25 @@ public class GameGrid {
     
     public String serializeGrid() {
         StringBuilder sb = new StringBuilder();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (grid[x][y] != 0) {
-                    sb.append(x).append(",").append(y).append(",")
-                      .append(grid[x][y]).append(";");
+        if(!this.complete_state){
+            for(int [] par: changes){
+                int x = par[0];
+                int y = par[1];
+                sb.append(x).append(",").append(y).append(",")
+                    .append(grid[x][y]).append(";");
+            }
+            System.out.println(sb);
+            this.changes = new ArrayList<>();
+        }else{
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    if (grid[x][y] != 0) {
+                        sb.append(x).append(",").append(y).append(",")
+                        .append(grid[x][y]).append(";");
+                    }
                 }
             }
+            this.complete_state = false;
         }
         return sb.toString();
     }

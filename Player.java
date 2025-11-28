@@ -70,13 +70,11 @@ public class Player {
         this.score = 0; // Réinitialiser le score au respawn
     }
 
-    public void calculateScore(Set<String> territories) {
+    public void calculateScore(int[][] territories,int WIDTH, int HEIGHT) {
         int newScore = 0;
-        for (String cell : territories) {
-            String[] coords = cell.split(",");
-            if (coords.length >= 3) {
-                int owner = Integer.parseInt(coords[2]);
-                if (owner == this.id) {
+        for (int i = 0; i < WIDTH; i++) {
+            for(int j = 0; j < HEIGHT; j++){
+                if (territories[i][j] == this.id) {
                     newScore++;
                 }
             }
