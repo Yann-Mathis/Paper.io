@@ -81,16 +81,12 @@ public class GameGrid {
         // Flood fill pour remplir l'intérieur
         boolean[][] visited = new boolean[width][height];
         
-        for (int[] trilha : player.getTrail()) {
-            int px = trilha[0];
-            int py = trilha[1];
-            int vizinhos[][]={{px+1,py},{px-1,py},{px,py-1},{px,py+1}};
-            for(int[] p: vizinhos){
-                int x = p[0];
-                int y = p[1];
-                if (!visited[x][y]) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if ( !visited[x][y]) {
                     List<int[]> region = new ArrayList<>();
-                    boolean touchesBorder = floodFill(x-1, y, visited, region, playerId);
+                    boolean touchesBorder = floodFill(x, y, visited, region, playerId);
+                    
                     if (!touchesBorder) {
                         for (int[] point : region) {
                             grid[point[0]][point[1]] = playerId;
@@ -99,9 +95,8 @@ public class GameGrid {
                     }
                 }
             }
-            
-        
         }
+        
         
         player.clearTrail();
     }

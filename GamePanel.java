@@ -43,7 +43,7 @@ public class GamePanel extends JPanel implements KeyListener {
         // Mise à jour des scores
         for (Player player : players.values()) {
             //player.calculateScore(territories);
-            //player.calculateScore(grade,columns,rows);
+            player.calculateScore(grade,columns,rows);
         }
 
         repaint();
